@@ -1,0 +1,23 @@
+#proxy configuration elements for dev environment
+keystore:
+  path: "mykeystore.jks"
+  password: "mule999"
+  keyPassword: "mule999"
+
+api:
+  id: "15825001"
+  version: "v1"
+
+http:
+  port: "8081"
+
+https:
+  port: "8083"
+
+my:
+  client-id: "65c0fcb1dd5043d985f0b66530368d13"
+  client-secret: "50B7fe684dBb4bDc908017b06272FaB6"
+  
+mule:
+  env: "dev"
+

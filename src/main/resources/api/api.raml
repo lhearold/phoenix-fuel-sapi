@@ -1,0 +1,47 @@
+#%RAML 1.0
+title: irea-customer-sync-papi
+version: v1
+
+uses:  
+  security: exchange_modules/1a96e191-5ed2-4a5a-be69-71e54e320dd1/api-common/1.0.0/standard-security.raml
+  trait: exchange_modules/1a96e191-5ed2-4a5a-be69-71e54e320dd1/api-common/1.0.0/standard-traits.raml
+  types: exchange_modules/1a96e191-5ed2-4a5a-be69-71e54e320dd1/api-common/1.0.0/standard-types.raml
+
+/inventory:
+  get:
+    queryParameters: 
+      startDate:
+        type: string
+        required: true
+      endDate:
+        type: string
+        required: true
+    description: Return transactions.
+    is: [trait.client-authorization-required, trait.standard-error-responses]
+    securedBy: [security.basic]
+    responses:
+      200:
+         description: "OK. The server has accepted the request."
+         
+         
+/status:
+  put:
+    queryParameters: 
+      siteId:
+        type: string
+        required: true
+      transNum:
+        type: string
+        required: true
+      date:
+        type: string
+        required: true
+    description: Update transactions.
+    is: [trait.client-authorization-required, trait.standard-error-responses]
+    securedBy: [security.basic]
+    responses:
+      200:
+         description: "OK. The server has accepted the request."
+         
+    
+         

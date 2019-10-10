@@ -1,0 +1,9 @@
+api:
+  id: "12983275"
+  version: "v1"
+
+json:
+ logger:
+    application:
+        name: "phoenix-fuel-sapi"
+        version: "v1"

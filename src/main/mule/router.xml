@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:samba="http://www.mulesoft.org/schema/mule/samba" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:cloudhub="http://www.mulesoft.org/schema/mule/cloudhub" xmlns:coupa="http://www.mulesoft.org/schema/mule/coupa" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:min-log="http://www.mulesoft.org/schema/mule/min-log" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd   http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd   http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd      http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd  http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd      http://www.mulesoft.org/schema/mule/min-log http://www.mulesoft.org/schema/mule/min-log/current/mule-min-log.xsd http://www.mulesoft.org/schema/mule/cloudhub http://www.mulesoft.org/schema/mule/cloudhub/current/mule-cloudhub.xsd http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/samba http://www.mulesoft.org/schema/mule/samba/current/mule-samba.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="api-main">
+        <http:listener path="/${secure::api.version}/*" doc:name="Listener" config-ref="api-httpsListenerConfig">
+            <ee:repeatable-file-store-stream bufferUnit="MB" />
+			<http:response statusCode="#[vars.httpStatus default 200]" reasonPhrase="#[vars.reasonPhrase]">
+                <http:headers><![CDATA[#[output application/java
+---
+{
+	"x-transaction-id" : vars.transactionProperties.'x-transaction-id'
+}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]" reasonPhrase="#[vars.httpReason]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+            </http:error-response>
+        </http:listener>
+        <min-log:new doc:name="Set transaction properties" target="transactionProperties" headers="#[attributes.headers]" />
+        <apikit:router doc:name="APIkit Router" config-ref="api-config" />
+        <error-handler ref="globalError_Handler" />
+    </flow>
+</mule>

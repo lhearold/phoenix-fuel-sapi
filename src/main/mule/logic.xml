@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:samba="http://www.mulesoft.org/schema/mule/samba" xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:min-log="http://www.mulesoft.org/schema/mule/min-log" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	http://www.mulesoft.org/schema/mule/min-log http://www.mulesoft.org/schema/mule/min-log/current/mule-min-log.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+http://www.mulesoft.org/schema/mule/samba http://www.mulesoft.org/schema/mule/samba/current/mule-samba.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<flow name="get:\inventory:api-config">
+		<ee:transform doc:name="Transform Message" doc:id="b6efc203-3030-4f20-8e4a-f76c7c7c085d" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="startDate" ><![CDATA[%dw 2.0
+output application/dw
+---
+attributes.queryParams.startDate ]]></ee:set-variable>
+				<ee:set-variable variableName="endDate" ><![CDATA[%dw 2.0
+output application/dw
+---
+attributes.queryParams.endDate ]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="ed993224-5a1a-4ee0-a676-3b34dd820130" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="query" ><![CDATA[%dw 2.0
+output application/dw
+---
+
+("SELECT * from dbo.TRANSACTIONS WHERE UserEntry9 IS NULL and Date >='"++ vars.startDate ++ "' AND Date <='"++ vars.endDate ++"'") as String
+ ]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<db:select doc:name="Select" doc:id="5b0174c9-e831-4b01-9f11-bc7911c312c0" config-ref="Database_Config">
+			<db:sql >#[vars.query]</db:sql>
+		</db:select>
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="a6aec465-7616-4e83-bd4c-5ec13dbcbbba">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    
+    	<flow name="put:\status:api-config">
+		<ee:transform doc:name="Transform Message" doc:id="a5d27530-4311-4f64-ba16-5da6eddddf8b" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="date" ><![CDATA[%dw 2.0
+output application/dw
+---
+attributes.queryParams.date]]></ee:set-variable>
+				<ee:set-variable variableName="siteId" ><![CDATA[%dw 2.0
+output application/dw
+---
+attributes.queryParams.siteId]]></ee:set-variable>
+				<ee:set-variable variableName="transNum" ><![CDATA[%dw 2.0
+output application/dw
+---
+attributes.queryParams.transNum]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="2daa6a6a-448b-47ab-88a7-1c6600e10dbe" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="query" ><![CDATA[%dw 2.0
+output application/dw
+---
+
+("UPDATE Transactions"++
+"SET UserEntry9 = '1'"++ 
+"WHERE SiteId ='" ++ vars.siteId ++ "'" ++
+"AND TransNum ='" ++ vars.transNum ++ "'" ++
+"AND Date =< '" ++ vars.date ++ "'" ++
+"AND UserEntry9 IS NULL") as String]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<db:select doc:name="Select" doc:id="167eeeef-1c20-4c79-adef-53d15d580c24" config-ref="Database_Config">
+			<db:sql >#[vars.query]</db:sql>
+		</db:select>
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="a3591e18-4635-4513-a7db-3868b81c2c85">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+</mule>

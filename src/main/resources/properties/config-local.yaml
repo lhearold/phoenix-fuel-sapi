@@ -1,0 +1,29 @@
+#proxy configuration elements for local environment
+keystore:
+  path: "mykeystore.jks"
+  password: "mule999"
+  keyPassword: "mule999"
+
+api:
+  id: "12983275"
+  version: "v1"
+
+http:
+  port: "8081"
+
+https:
+  port: "8082"
+
+my:
+  client-id: "xx"
+  client-secret: "xx"
+
+json:
+  logger:
+    application:
+      name: "irea-common-utility-sapi"
+      version: "v1"
+
+mule:
+  env: "local"
+  
